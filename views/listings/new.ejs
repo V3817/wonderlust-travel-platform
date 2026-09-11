@@ -1,0 +1,530 @@
+<% layout("/layouts/boilerplate") %>
+
+<!-- Flash Messages Container -->
+<div id="flashContainer">
+  <% if (success && success.length > 0) { %>
+    <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 mx-3 mt-3" role="alert">
+      <div class="d-flex align-items-center">
+        <i class="bi bi-check-circle-fill me-2 fs-5"></i>
+        <strong>Success!</strong> <%= success %>
+      </div>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  <% } %>
+
+  <% if (error && error.length > 0) { %>
+    <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0 mx-3 mt-3" role="alert">
+      <div class="d-flex align-items-center">
+        <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+        <strong>Error!</strong> <%= error %>
+      </div>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  <% } %>
+</div>
+
+<div class="bg-light min-vh-100 py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-8 col-lg-7">
+        <!-- Back Button -->
+        <div class="mb-4">
+          <a href="/listings" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Listings
+          </a>
+        </div>
+
+        <!-- Card Wrapper -->
+        <div class="card shadow-lg border-0 rounded-4">
+          <div class="card-header bg-primary text-white text-center py-4">
+            <h3 class="mb-0 fw-bold">📝 Create a New Listing</h3>
+            <p class="mb-0 opacity-75">Share your amazing property with travelers</p>
+          </div>
+          
+          <div class="card-body p-5">
+            <form action="/listings" method="post" class="needs-validation" enctype="multipart/form-data" novalidate id="listingForm">         
+
+              <!-- Title -->
+              <div class="mb-4">
+                <label for="title" class="form-label fw-semibold">
+                  <i class="bi bi-house-door text-primary me-2"></i>Property Title
+                </label>
+                <input type="text" 
+                       placeholder="e.g., Cozy Beach House with Ocean View" 
+                       name="title" 
+                       class="form-control form-control-lg" 
+                       id="title" 
+                       required>
+                <div class="invalid-feedback">Please enter a catchy title for your property.</div>
+                <div class="form-text">Make it descriptive and appealing to guests</div>
+              </div>
+
+              <!-- Description -->
+              <div class="mb-4">
+                <label for="description" class="form-label fw-semibold">
+                  <i class="bi bi-text-paragraph text-success me-2"></i>Description
+                </label>
+                <textarea name="description" 
+                          id="description" 
+                          placeholder="Describe your property, amenities, and what makes it special..." 
+                          class="form-control" 
+                          rows="4" 
+                          required></textarea>
+                <div class="invalid-feedback">Please provide a detailed description.</div>
+                <div class="form-text">
+                  <span id="charCount">0</span>/500 characters. Help guests understand what makes your place unique.
+                </div>
+              </div>
+
+              <!-- Image Upload Section -->
+              <div class="mb-4">
+                <label for="image" class="form-label fw-semibold">
+                  <i class="bi bi-cloud-upload text-warning me-2"></i>Property Image
+                </label>
+                <div class="image-upload-container">
+                  <input type="file" 
+                         name="image" 
+                         class="form-control form-control-lg" 
+                         id="image"
+                         accept="image/*">
+                  <div class="form-text">
+                    <i class="bi bi-cloud-check text-success"></i> 
+                    Upload your property's best photo (Max size: 10MB, stored securely in the cloud)
+                  </div>
+                  
+                  <!-- Image Preview -->
+                  <div id="imagePreview" class="mt-3 d-none">
+                    <img id="previewImg" src="" alt="Preview" class="img-fluid rounded shadow-sm" style="max-height: 200px;">
+                    <div class="mt-2">
+                      <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeImage()">
+                        <i class="bi bi-trash"></i> Remove Image
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Price & Country Row -->
+              <div class="row mb-4">
+                <div class="col-md-4">
+                  <label for="price" class="form-label fw-semibold">
+                    <i class="bi bi-currency-rupee text-success me-2"></i>Price per Night
+                  </label>
+                  <div class="input-group input-group-lg">
+                    <span class="input-group-text">₹</span>
+                    <input type="number" 
+                           step="1" 
+                           min="1" 
+                           placeholder="2500" 
+                           name="price" 
+                           class="form-control" 
+                           id="price"  
+                           required>
+                  </div>
+                  <div class="invalid-feedback">Enter a valid price (minimum ₹1).</div>
+                </div>
+
+                <div class="col-md-8">
+                  <label for="country" class="form-label fw-semibold">
+                    <i class="bi bi-flag text-info me-2"></i>Country
+                  </label>
+                  <select name="country" class="form-select form-select-lg" id="country" required>
+                    <option value="">Select a country</option>
+                    <option value="India">India</option>
+                    <option value="USA">United States</option>
+                    <option value="UK">United Kingdom</option>
+                    <option value="France">France</option>
+                    <option value="Japan">Japan</option>
+                    <option value="Australia">Australia</option>
+                    <option value="Thailand">Thailand</option>
+                    <option value="Italy">Italy</option>
+                    <option value="Spain">Spain</option>
+                    <option value="Other">Other</option>
+                  </select>
+                  <div class="invalid-feedback">Please select a country.</div>
+                </div>
+              </div>
+
+              <!-- Location -->
+              <div class="mb-5">
+                <label for="location" class="form-label fw-semibold">
+                  <i class="bi bi-geo-alt text-danger me-2"></i>Location
+                </label>
+                <input type="text" 
+                       placeholder="e.g., Goa, Bali, Paris City Center" 
+                       name="location" 
+                       class="form-control form-control-lg" 
+                       id="location" 
+                       required>
+                <div class="invalid-feedback">Location is required.</div>
+                <div class="form-text">Be specific about the area or neighborhood</div>
+              </div>
+
+              <!-- Submit Buttons -->
+              <div class="d-grid gap-2 d-md-flex justify-content-md-between">
+                <div>
+                  <button type="button" class="btn btn-outline-warning btn-sm me-2" onclick="clearForm()">
+                    <i class="bi bi-eraser"></i> Clear Form
+                  </button>
+                </div>
+                <div>
+                  <button type="button" class="btn btn-outline-secondary btn-lg px-4" onclick="history.back()">
+                    <i class="bi bi-x-circle"></i> Cancel
+                  </button>
+                  <button class="btn btn-primary btn-lg px-5" type="submit">
+                    <i class="bi bi-plus-circle"></i> Create Listing
+                  </button>
+                </div>
+              </div>
+
+            </form>
+          </div>
+        </div>
+
+        <!-- Tips Card -->
+        <div class="card border-0 shadow-sm mt-4">
+          <div class="card-body">
+            <h6 class="card-title text-primary"><i class="bi bi-lightbulb"></i> Pro Tips</h6>
+            <ul class="small text-muted mb-0">
+              <li>Use high-quality, well-lit photos</li>
+              <li>Write detailed descriptions with amenities</li>
+              <li>Price competitively based on your location</li>
+              <li>Highlight unique features of your property</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Flash message function
+  function showFlashMessage(type, title, message, duration = 5000) {
+    const alertHTML = `
+      <div class="alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show shadow-sm border-0 mx-3 mt-3" role="alert">
+        <div class="d-flex align-items-center">
+          <i class="bi bi-${type === 'success' ? 'check-circle-fill' : 'exclamation-triangle-fill'} me-2 fs-5"></i>
+          <strong>${title}!</strong> ${message}
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    `;
+    
+    document.body.insertAdjacentHTML('afterbegin', alertHTML);
+    
+    setTimeout(() => {
+      const alert = document.querySelector('.alert');
+      if (alert) {
+        const bsAlert = new bootstrap.Alert(alert);
+        bsAlert.close();
+      }
+    }, duration);
+  }
+
+  // Character counter for description
+  const description = document.getElementById('description');
+  const charCount = document.getElementById('charCount');
+  
+  description.addEventListener('input', function() {
+    const count = this.value.length;
+    charCount.textContent = count;
+    
+    if (count > 500) {
+      charCount.className = 'text-danger fw-bold';
+      showFlashMessage('warning', 'Character Limit', 'Description exceeds 500 characters. Please shorten it.');
+    } else if (count > 400) {
+      charCount.className = 'text-warning fw-bold';
+    } else {
+      charCount.className = 'text-muted';
+    }
+  });
+
+  // Enhanced image preview with file handling
+  const imageInput = document.getElementById('image');
+  const imagePreview = document.getElementById('imagePreview');
+  const previewImg = document.getElementById('previewImg');
+  
+  imageInput.addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        showFlashMessage('error', 'Invalid File', 'Please select a valid image file.');
+        this.value = '';
+        imagePreview.classList.add('d-none');
+        return;
+      }
+      
+      // Validate file size (10MB for cloud storage)
+      if (file.size > 10 * 1024 * 1024) {
+        showFlashMessage('error', 'File Too Large', 'Image size must be less than 10MB.');
+        this.value = '';
+        imagePreview.classList.add('d-none');
+        return;
+      }
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        previewImg.src = e.target.result;
+        imagePreview.classList.remove('d-none');
+        showFlashMessage('success', 'Image Selected', 'Image preview loaded successfully!');
+      };
+      reader.readAsDataURL(file);
+    } else {
+      imagePreview.classList.add('d-none');
+    }
+  });
+
+  // Remove image function
+  window.removeImage = function() {
+    imageInput.value = '';
+    imagePreview.classList.add('d-none');
+    showFlashMessage('info', 'Image Removed', 'Image has been removed from the form.');
+  };
+
+  // Clear form function
+  window.clearForm = function() {
+    if (confirm('Are you sure you want to clear all form data? This action cannot be undone.')) {
+      // Clear form fields
+      form.reset();
+      
+      // Clear image preview
+      imagePreview.classList.add('d-none');
+      
+      // Clear localStorage drafts
+      formInputs.forEach(input => {
+        localStorage.removeItem(`draft_${input.name}`);
+      });
+      
+      // Reset character counter
+      charCount.textContent = '0';
+      charCount.className = 'text-muted';
+      
+      // Remove validation classes
+      form.classList.remove('was-validated');
+      
+      // Focus on first input
+      document.getElementById('title').focus();
+      
+      showFlashMessage('success', 'Form Cleared', 'All form data has been cleared successfully.');
+    }
+  };
+
+  // Enhanced form validation
+  const form = document.getElementById('listingForm');
+  form.addEventListener('submit', function(event) {
+    let hasErrors = false;
+    const errors = [];
+    
+    // Title validation
+    const title = document.getElementById('title');
+    if (!title.value.trim()) {
+      errors.push('Title is required');
+      hasErrors = true;
+    } else if (title.value.trim().length < 3) {
+      errors.push('Title must be at least 3 characters long');
+      hasErrors = true;
+    }
+    
+    // Description validation
+    const desc = document.getElementById('description');
+    if (!desc.value.trim()) {
+      errors.push('Description is required');
+      hasErrors = true;
+    } else if (desc.value.trim().length < 10) {
+      errors.push('Description must be at least 10 characters long');
+      hasErrors = true;
+    } else if (desc.value.length > 500) {
+      errors.push('Description must not exceed 500 characters');
+      hasErrors = true;
+    }
+    
+    // Price validation
+    const price = document.getElementById('price');
+    const priceValue = parseFloat(price.value);
+    if (!price.value) {
+      errors.push('Price is required');
+      hasErrors = true;
+    } else if (isNaN(priceValue) || priceValue <= 0) {
+      errors.push('Price must be a positive number');
+      hasErrors = true;
+    } else if (priceValue > 1000000) {
+      errors.push('Price seems too high. Please enter a reasonable amount');
+      hasErrors = true;
+    }
+    
+    // Country validation
+    const country = document.getElementById('country');
+    if (!country.value) {
+      errors.push('Country is required');
+      hasErrors = true;
+    }
+    
+    // Location validation
+    const location = document.getElementById('location');
+    if (!location.value.trim()) {
+      errors.push('Location is required');
+      hasErrors = true;
+    } else if (location.value.trim().length < 2) {
+      errors.push('Location must be at least 2 characters long');
+      hasErrors = true;
+    }
+    
+    // Image validation
+    const imageFile = imageInput.files[0];
+    if (imageFile) {
+      if (!imageFile.type.startsWith('image/')) {
+        errors.push('Please select a valid image file');
+        hasErrors = true;
+      }
+      
+      if (imageFile.size > 10 * 1024 * 1024) {
+        errors.push('Image size must be less than 10MB');
+        hasErrors = true;
+      }
+    }
+    
+    if (hasErrors) {
+      event.preventDefault();
+      event.stopPropagation();
+      
+      showFlashMessage('error', 'Validation Error', errors.join('. '));
+      
+      // Scroll to first invalid field
+      const firstInvalid = form.querySelector(':invalid');
+      if (firstInvalid) {
+        firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        firstInvalid.focus();
+      }
+    } else {
+      // Show success message before form submission
+      showFlashMessage('info', 'Submitting', 'Please wait while we create your listing...');
+    }
+    
+    form.classList.add('was-validated');
+  });
+
+  // Price formatting with error handling
+  const priceInput = document.getElementById('price');
+  priceInput.addEventListener('input', function() {
+    try {
+      // Remove non-numeric characters except decimal point
+      let value = this.value.replace(/[^0-9.]/g, '');
+      
+      // Prevent multiple decimal points
+      const parts = value.split('.');
+      if (parts.length > 2) {
+        value = parts[0] + '.' + parts.slice(1).join('');
+      }
+      
+      this.value = value;
+      
+      // Show warning for very high prices
+      const numericValue = parseFloat(value);
+      if (numericValue > 100000) {
+        showFlashMessage('warning', 'High Price', 'This price seems quite high. Please verify it\'s correct.');
+      }
+    } catch (error) {
+      showFlashMessage('error', 'Input Error', 'Error processing price input.');
+      console.error('Price input error:', error);
+    }
+  });
+
+  // Auto-save to localStorage (draft functionality) with user control
+  const formInputs = form.querySelectorAll('input, textarea, select');
+  let draftLoaded = false;
+  
+  // Check if there are any saved drafts
+  const hasDrafts = Array.from(formInputs).some(input => {
+    return localStorage.getItem(`draft_${input.name}`);
+  });
+  
+  // If drafts exist, ask user if they want to restore
+  if (hasDrafts) {
+    const restoreDraft = confirm('We found a saved draft of your listing. Would you like to restore it?');
+    
+    if (restoreDraft) {
+      formInputs.forEach(input => {
+        const savedValue = localStorage.getItem(`draft_${input.name}`);
+        if (savedValue && !input.value) {
+          input.value = savedValue;
+          if (input.name === 'description') {
+            const event = new Event('input');
+            input.dispatchEvent(event);
+          }
+        }
+      });
+      draftLoaded = true;
+      showFlashMessage('success', 'Draft Restored', 'Your previous form data has been restored.');
+    } else {
+      // Clear all drafts if user doesn't want to restore
+      formInputs.forEach(input => {
+        localStorage.removeItem(`draft_${input.name}`);
+      });
+      showFlashMessage('info', 'Fresh Start', 'Starting with a clean form.');
+    }
+  }
+  
+  // Save data on input (only if user wants auto-save)
+  formInputs.forEach(input => {
+    input.addEventListener('input', function() {
+      try {
+        // Only save if user has interacted with the form or restored a draft
+        if (draftLoaded || document.querySelector('input:focus, textarea:focus, select:focus')) {
+          localStorage.setItem(`draft_${this.name}`, this.value);
+        }
+      } catch (error) {
+        console.error('Error saving draft:', error);
+      }
+    });
+  });
+
+  // Clear draft on successful submission or page unload after successful submission
+  form.addEventListener('submit', function() {
+    if (form.checkValidity()) {
+      formInputs.forEach(input => {
+        try {
+          localStorage.removeItem(`draft_${input.name}`);
+        } catch (error) {
+          console.error('Error clearing draft:', error);
+        }
+      });
+      showFlashMessage('success', 'Draft Cleared', 'Form submitted successfully. Draft data cleared.');
+    }
+  });
+
+  // Network status monitoring
+  window.addEventListener('offline', () => {
+    showFlashMessage('error', 'Connection Lost', 'You are offline. Your changes are being saved locally.');
+  });
+  
+  window.addEventListener('online', () => {
+    showFlashMessage('success', 'Connection Restored', 'You are back online. You can now submit your listing.');
+  });
+
+  // Initial network check
+  if (!navigator.onLine) {
+    showFlashMessage('warning', 'Offline Mode', 'You are currently offline. Your changes will be saved locally.');
+  }
+
+  // Auto-dismiss server-side alerts
+  const alerts = document.querySelectorAll('.alert');
+  alerts.forEach(alert => {
+    setTimeout(() => {
+      try {
+        if (typeof bootstrap !== 'undefined') {
+          const alertInstance = new bootstrap.Alert(alert);
+          alertInstance.close();
+        }
+      } catch (error) {
+        console.error('Alert dismiss error:', error);
+      }
+    }, 5000);
+  });
+});
+</script>

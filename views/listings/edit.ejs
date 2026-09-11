@@ -1,0 +1,140 @@
+<% layout("/layouts/boilerplate") %>
+
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card shadow">
+        <div class="card-header bg-warning text-dark">
+          <h3><i class="bi bi-pencil-square"></i> Edit Listing</h3>
+        </div>
+        <div class="card-body">
+          <form action="/listings/<%= listing._id %>?_method=PUT" method="POST" class="needs-validation" enctype="multipart/form-data" novalidate>
+            
+            <div class="mb-3">
+              <label for="title" class="form-label">Title</label>
+              <input type="text" name="title" class="form-control" value="<%= listing.title %>" required>
+            </div>
+
+            <div class="mb-3">
+              <label for="description" class="form-label">Description</label>
+              <textarea name="description" class="form-control" rows="4" required><%= listing.description %></textarea>
+            </div>
+
+            <div class="mb-3">
+              <label for="image" class="form-label">
+                <i class="bi bi-cloud-upload text-warning me-2"></i>Property Image
+              </label>
+              
+              <!-- Current Image Display -->
+              <% if (listing.image) { %>
+                <div class="current-image mb-3">
+                  <label class="form-label small text-muted">
+                    <i class="bi bi-cloud-check text-success"></i> Current Image (Cloud Hosted):
+                  </label>
+                  <div class="position-relative d-inline-block">
+                    <img src="<%= listing.image %>" alt="Current property image" class="img-thumbnail" style="max-height: 150px;">
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success">
+                      <i class="bi bi-cloud"></i> Cloud
+                    </span>
+                  </div>
+                </div>
+              <% } %>
+              
+              <input type="file" name="image" class="form-control" id="image" accept="image/*">
+              <div class="form-text">
+                <i class="bi bi-cloud-upload"></i> 
+                Upload a new image to replace the current one (Max size: 10MB). Leave empty to keep current image.
+                Images are automatically optimized and stored securely in the cloud.
+              </div>
+              
+              <!-- New Image Preview -->
+              <div id="imagePreview" class="mt-3 d-none">
+                <label class="form-label small text-muted">New Image Preview:</label>
+                <div>
+                  <img id="previewImg" src="" alt="Preview" class="img-thumbnail" style="max-height: 150px;">
+                  <div class="mt-2">
+                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeNewImage()">
+                      <i class="bi bi-trash"></i> Remove New Image
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label for="price" class="form-label">Price (per night)</label>
+                <div class="input-group">
+                  <span class="input-group-text">₹</span>
+                  <input type="number" name="price" class="form-control" value="<%= listing.price %>" required>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label for="country" class="form-label">Country</label>
+                <input type="text" name="country" class="form-control" value="<%= listing.country %>" required>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="location" class="form-label">Location</label>
+              <input type="text" name="location" class="form-control" value="<%= listing.location %>" required>
+            </div>
+
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+              <a href="/listings/<%= listing._id %>" class="btn btn-secondary">Cancel</a>
+              <button type="submit" class="btn btn-warning">Update Listing</button>
+            </div>
+
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Image preview functionality for edit form
+  const imageInput = document.getElementById('image');
+  const imagePreview = document.getElementById('imagePreview');
+  const previewImg = document.getElementById('previewImg');
+  
+  imageInput.addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        alert('Please select a valid image file.');
+        this.value = '';
+        imagePreview.classList.add('d-none');
+        return;
+      }
+      
+      // Validate file size (10MB for cloud storage)
+      if (file.size > 10 * 1024 * 1024) {
+        alert('Image size must be less than 10MB.');
+        this.value = '';
+        imagePreview.classList.add('d-none');
+        return;
+      }
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        previewImg.src = e.target.result;
+        imagePreview.classList.remove('d-none');
+      };
+      reader.readAsDataURL(file);
+    } else {
+      imagePreview.classList.add('d-none');
+    }
+  });
+
+  // Remove new image function
+  window.removeNewImage = function() {
+    imageInput.value = '';
+    imagePreview.classList.add('d-none');
+  };
+});
+</script>

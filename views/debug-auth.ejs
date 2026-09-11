@@ -1,0 +1,45 @@
+<% layout("/layouts/boilerplate") %>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Authentication Debug Info</h4>
+                </div>
+                <div class="card-body">
+                    <h5>Current Authentication State:</h5>
+                    <div class="alert alert-info">
+                        <strong>Is Authenticated:</strong> <%= typeof currentUser !== 'undefined' && currentUser ? 'Yes' : 'No' %><br>
+                        <strong>Current User:</strong> <%= currentUser ? JSON.stringify(currentUser, null, 2) : 'None' %><br>
+                        <strong>Session ID:</strong> Available in server logs
+                    </div>
+                    
+                    <% if (currentUser) { %>
+                        <div class="alert alert-success">
+                            <h6>✅ User is logged in!</h6>
+                            <p><strong>Username:</strong> <%= currentUser.username %></p>
+                            <p><strong>Email:</strong> <%= currentUser.email %></p>
+                            <p><strong>User ID:</strong> <%= currentUser._id %></p>
+                        </div>
+                    <% } else { %>
+                        <div class="alert alert-warning">
+                            <h6>❌ User is NOT logged in</h6>
+                            <p>Please log in to see user information.</p>
+                            <a href="/login" class="btn btn-primary">Login</a>
+                        </div>
+                    <% } %>
+                    
+                    <hr>
+                    <h5>Test Links:</h5>
+                    <div class="btn-group" role="group">
+                        <a href="/login" class="btn btn-outline-primary">Login</a>
+                        <a href="/logout" class="btn btn-outline-secondary">Logout</a>
+                        <a href="/listings" class="btn btn-outline-success">Listings</a>
+                        <a href="/" class="btn btn-outline-info">Home</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

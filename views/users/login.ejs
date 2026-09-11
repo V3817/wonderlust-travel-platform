@@ -1,0 +1,193 @@
+<% layout("/layouts/boilerplate") %>
+
+<!-- Flash Messages Container -->
+<div id="flashContainer">
+  <% if (success && success.length > 0) { %>
+    <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 mx-3 mt-3" role="alert">
+      <div class="d-flex align-items-center">
+        <i class="bi bi-check-circle-fill me-2 fs-5"></i>
+        <strong>Success!</strong> <%= success %>
+      </div>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  <% } %>
+
+  <% if (error && error.length > 0) { %>
+    <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0 mx-3 mt-3" role="alert">
+      <div class="d-flex align-items-center">
+        <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+        <strong>Error!</strong> <%= error %>
+      </div>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  <% } %>
+</div>
+
+<div class="min-vh-100 d-flex align-items-center" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-6 col-lg-4">
+        <div class="card shadow-lg border-0 rounded-4">
+          <div class="card-header bg-white text-center py-4 border-0 rounded-top-4">
+            <div class="mb-3">
+              <i class="bi bi-box-arrow-in-right text-primary" style="font-size: 3rem;"></i>
+            </div>
+            <h3 class="fw-bold mb-2">Welcome Back</h3>
+            <p class="text-muted mb-0">Sign in to your WonderLust account</p>
+          </div>
+          
+          <div class="card-body p-5">
+            <form action="/login" method="POST" class="needs-validation" novalidate id="loginForm">
+              
+              <!-- Username Field -->
+              <div class="mb-4">
+                <label for="username" class="form-label fw-semibold">
+                  <i class="bi bi-person text-primary me-2"></i>Username
+                </label>
+                <input type="text" 
+                       class="form-control form-control-lg" 
+                       id="username" 
+                       name="username" 
+                       placeholder="Enter your username"
+                       required>
+                <div class="invalid-feedback">
+                  Please enter your username.
+                </div>
+              </div>
+
+              <!-- Password Field -->
+              <div class="mb-4">
+                <label for="password" class="form-label fw-semibold">
+                  <i class="bi bi-lock text-warning me-2"></i>Password
+                </label>
+                <div class="input-group">
+                  <input type="password" 
+                         class="form-control form-control-lg" 
+                         id="password" 
+                         name="password" 
+                         placeholder="Enter your password"
+                         required>
+                  <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                    <i class="bi bi-eye" id="toggleIcon"></i>
+                  </button>
+                </div>
+                <div class="invalid-feedback">
+                  Please enter your password.
+                </div>
+              </div>
+
+              <!-- Submit Button -->
+              <div class="d-grid mb-4">
+                <button type="submit" class="btn btn-primary btn-lg rounded-3" id="submitBtn">
+                  <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+                </button>
+              </div>
+
+              <!-- Signup Link -->
+              <div class="text-center">
+                <p class="text-muted mb-0">
+                  Don't have an account? 
+                  <a href="/signup" class="text-primary fw-semibold text-decoration-none">Create Account</a>
+                </p>
+              </div>
+
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  try {
+    // Form submission handling
+    const form = document.getElementById('loginForm');
+    const submitBtn = document.getElementById('submitBtn');
+
+    if (form && submitBtn) {
+      form.addEventListener('submit', function(event) {
+        try {
+          if (form.checkValidity()) {
+            submitBtn.innerHTML = '<i class="spinner-border spinner-border-sm me-2"></i>Signing In...';
+            submitBtn.disabled = true;
+          }
+          form.classList.add('was-validated');
+        } catch (error) {
+          console.error('Form submission error:', error);
+        }
+      });
+    }
+
+    // Auto-dismiss server-side alerts
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(alert => {
+      setTimeout(() => {
+        try {
+          if (typeof bootstrap !== 'undefined') {
+            const alertInstance = new bootstrap.Alert(alert);
+            alertInstance.close();
+          }
+        } catch (error) {
+          console.error('Alert dismiss error:', error);
+        }
+      }, 5000);
+    });
+
+  } catch (error) {
+    console.error('Login page initialization error:', error);
+  }
+});
+</script>
+
+<style>
+/* Flash message styling */
+.alert {
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  border-left: 4px solid;
+  animation: slideInDown 0.5s ease-out;
+}
+
+.alert-success {
+  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+  border-left-color: #28a745;
+  color: #155724;
+}
+
+.alert-danger {
+  background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+  border-left-color: #dc3545;
+  color: #721c24;
+}
+
+@keyframes slideInDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Card styling */
+.card {
+  backdrop-filter: blur(10px);
+}
+
+/* Button hover effects */
+.btn:hover {
+  transform: translateY(-2px);
+  transition: all 0.3s ease;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .card-body {
+    padding: 2rem !important;
+  }
+}
+</style>

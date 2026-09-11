@@ -1,0 +1,1504 @@
+<% layout("/layouts/boilerplate") %>
+
+<!-- Flash Messages Container -->
+<div id="flashContainer">
+  <% if (success && success.length > 0) { %>
+    <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 mx-3 mt-3" role="alert">
+      <div class="d-flex align-items-center">
+        <i class="bi bi-check-circle-fill me-2 fs-5"></i>
+        <strong>Success!</strong> <%= success %>
+      </div>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  <% } %>
+
+  <% if (error && error.length > 0) { %>
+    <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0 mx-3 mt-3" role="alert">
+      <div class="d-flex align-items-center">
+        <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+        <strong>Error!</strong> <%= error %>
+      </div>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  <% } %>
+</div>
+
+<!-- Link to external CSS -->
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/slotMachine.css">
+
+<!-- Breadcrumb Navigation -->
+<nav aria-label="breadcrumb" class="container mt-3">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/" class="text-decoration-none">Home</a></li>
+    <li class="breadcrumb-item"><a href="/listings" class="text-decoration-none">Listings</a></li>
+    <li class="breadcrumb-item active" aria-current="page"><%= listing ? listing.title : 'Listing' %></li>
+  </ol>
+</nav>
+
+<div class="container my-4">
+  <div class="row">
+    <div class="col-lg-8 offset-lg-2">
+
+      <% if (listing) { %>
+        <!-- Back Button -->
+        <div class="mb-3">
+          <a href="/listings" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Listings
+          </a>
+        </div>
+
+        <!-- Title & Location -->
+        <div class="mb-4">
+          <h1 class="fw-bold mb-2 display-6"><%= listing.title %></h1>
+          <div class="d-flex align-items-center text-muted mb-2">
+            <i class="bi bi-geo-alt me-2"></i> 
+            <span class="fs-5"><%= listing.location %>, <%= listing.country %></span>
+          </div>
+          <!-- Quick Stats -->
+          <div class="d-flex gap-4 text-muted small">
+            <span><i class="bi bi-calendar-check"></i> Available now</span>
+            <% if (listing.reviews && listing.reviews.length > 0) { %>
+              <span><i class="bi bi-star-fill text-warning"></i> <%= (listing.reviews.reduce((sum, r) => sum + r.rating, 0) / listing.reviews.length).toFixed(1) %> rating</span>
+            <% } %>
+            <span><i class="bi bi-eye"></i> Recently viewed</span>
+          </div>
+        </div>
+
+        <!-- Main Image Card with Gallery Preview -->
+        <div class="card border-0 shadow-sm overflow-hidden mb-4">
+          <div class="position-relative">
+            <img src="<%= listing.image %>" 
+                 class="card-img-top" 
+                 style="height: 500px; object-fit: cover; cursor: pointer;" 
+                 alt="listing_image"
+                 data-bs-toggle="modal" 
+                 data-bs-target="#imageModal">
+            <div class="position-absolute bottom-0 end-0 m-3">
+              <button class="btn btn-dark btn-sm" data-bs-toggle="modal" data-bs-target="#imageModal">
+                <i class="bi bi-images"></i> View Photos
+              </button>
+            </div>
+            <!-- Favorite Button -->
+            <div class="position-absolute top-0 end-0 m-3">
+              <button class="btn btn-light btn-sm rounded-circle" onclick="toggleFavorite()" id="favoriteBtn">
+                <i class="bi bi-heart"></i>
+              </button>
+            </div>
+          </div>
+          
+          <div class="card-body p-4">
+            <div class="row">
+              <div class="col-md-8">
+                <% if (listing.owner) { %>
+                  <div class="d-flex align-items-center mb-3">
+                    <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-3" 
+                         style="width: 50px; height: 50px;">
+                      <i class="bi bi-person-fill text-white fs-4"></i>
+                    </div>
+                    <div>
+                      <h6 class="mb-0">Hosted by <strong><%= listing.owner.username %></strong></h6>
+                      <small class="text-muted">Verified host • Joined 2 years ago</small>
+                    </div>
+                  </div>
+                <% } %>
+                
+                <h5 class="mb-3">About this place</h5>
+                <p class="text-muted lh-lg"><%= listing.description %></p>
+                
+                <!-- Amenities Section -->
+                <h6 class="mt-4 mb-3">What this place offers</h6>
+                <div class="row g-2">
+                  <div class="col-6 col-md-4">
+                    <span class="badge bg-light text-dark p-2 w-100">
+                      <i class="bi bi-wifi text-primary me-2"></i>Free WiFi
+                    </span>
+                  </div>
+                  <div class="col-6 col-md-4">
+                    <span class="badge bg-light text-dark p-2 w-100">
+                      <i class="bi bi-car-front text-primary me-2"></i>Free Parking
+                    </span>
+                  </div>
+                  <div class="col-6 col-md-4">
+                    <span class="badge bg-light text-dark p-2 w-100">
+                      <i class="bi bi-thermometer-sun text-primary me-2"></i>AC
+                    </span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="col-md-4">
+                <!-- Price Card -->
+                <div class="card border shadow-sm sticky-top">
+                  <div class="card-body text-center">
+                    <h3 class="fw-bold text-primary mb-1">
+                      ₹<%= listing.price.toLocaleString("en-IN") %>
+                    </h3>
+                    <small class="text-muted">per night</small>
+                    <hr>
+                    <div class="d-grid gap-2">
+                      <button class="btn btn-primary btn-lg" onclick="showBookingModal()">
+                        <i class="bi bi-calendar-check"></i> Reserve
+                      </button>
+                      <button class="btn btn-outline-primary" onclick="addToWishlist()">
+                        <i class="bi bi-heart"></i> Save to Wishlist
+                      </button>
+                      <button class="btn btn-outline-secondary" onclick="shareProperty()">
+                        <i class="bi bi-share"></i> Share
+                      </button>
+                    </div>
+                    <small class="text-muted d-block mt-2">You won't be charged yet</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Action Buttons for Owner -->
+            <% if (currentUser && listing.owner && listing.owner._id.equals(currentUser._id)) { %>
+            <div class="d-flex gap-2 mt-4 pt-3 border-top">
+              <a href="/listings/<%= listing._id %>/edit" class="btn btn-success">
+                <i class="bi bi-pencil-square"></i> Edit Listing
+              </a>
+              <form action="/listings/<%= listing._id %>?_method=DELETE" method="POST" class="d-inline">
+                <button class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this listing?')">
+                  <i class="bi bi-trash"></i> Delete Listing
+                </button>
+              </form>
+            </div>
+            <% } %>
+          </div>
+        </div>
+
+        <!-- Interactive Location Map Section -->
+        <div class="card border-0 shadow-sm mb-4">
+          <div class="card-header bg-white py-3">
+            <h4 class="mb-0">
+              <i class="bi bi-geo-alt text-primary me-2"></i>
+              Where you'll be
+            </h4>
+            <p class="text-muted mb-0 mt-1">
+              <i class="bi bi-pin-map me-1"></i>
+              <%= listing.location %>, <%= listing.country %>
+            </p>
+          </div>
+          <div class="card-body p-0">
+            <!-- Leaflet Map Container -->
+            <div id="propertyMap" style="height: 400px; border-radius: 0.5rem; overflow: hidden;">
+              <!-- Map Loading State -->
+              <div class="d-flex align-items-center justify-content-center h-100 bg-light" id="mapLoading">
+                <div class="text-center">
+                  <div class="spinner-border text-primary mb-3" role="status">
+                    <span class="visually-hidden">Loading map...</span>
+                  </div>
+                  <h5 class="text-muted">Loading interactive map...</h5>
+                  <p class="mb-0 text-muted">Locating <%= listing.location %></p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Location Details -->
+            <div class="p-4">
+              <div class="row g-4">
+                <div class="col-md-6">
+                  <h6 class="fw-bold mb-3">
+                    <i class="bi bi-info-circle text-primary me-2"></i>
+                    About the location
+                  </h6>
+                  <p class="text-muted mb-3">
+                    This property is located in the heart of <%= listing.location %>, offering easy access to local attractions, 
+                    restaurants, and transportation. The area is known for its vibrant culture and convenient amenities.
+                  </p>
+                  
+                  <!-- Quick Stats -->
+                  <div class="row g-2">
+                    <div class="col-6">
+                      <div class="bg-light rounded p-2 text-center">
+                        <i class="bi bi-building text-warning fs-4"></i>
+                        <div class="mt-1">
+                          <small class="fw-bold d-block">City Center</small>
+                          <small class="text-muted">2.5 km</small>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-6">
+                      <div class="bg-light rounded p-2 text-center">
+                        <i class="bi bi-train-front text-info fs-4"></i>
+                        <div class="mt-1">
+                          <small class="fw-bold d-block">Metro</small>
+                          <small class="text-muted">800m</small>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="col-md-6">
+                  <h6 class="fw-bold mb-3">
+                    <i class="bi bi-compass text-primary me-2"></i>
+                    Getting around
+                  </h6>
+                  <div class="list-group list-group-flush">
+                    <div class="list-group-item border-0 px-0 d-flex justify-content-between">
+                      <span><i class="bi bi-car-front me-2 text-success"></i>By car</span>
+                      <small class="text-muted">Free parking available</small>
+                    </div>
+                    <div class="list-group-item border-0 px-0 d-flex justify-content-between">
+                      <span><i class="bi bi-bus-front me-2 text-warning"></i>Public transport</span>
+                      <small class="text-muted">3 min walk to bus stop</small>
+                    </div>
+                    <div class="list-group-item border-0 px-0 d-flex justify-content-between">
+                      <span><i class="bi bi-bicycle me-2 text-info"></i>Bike rental</span>
+                      <small class="text-muted">Available nearby</small>
+                    </div>
+                    <div class="list-group-item border-0 px-0 d-flex justify-content-between">
+                      <span><i class="bi bi-airplane me-2 text-primary"></i>Airport</span>
+                      <small class="text-muted">15 km / 25 min drive</small>
+                    </div>
+                  </div>
+                  
+                  <!-- Action Buttons -->
+                  <div class="mt-3">
+                    <button class="btn btn-outline-primary btn-sm me-2" onclick="openInMaps()">
+                      <i class="bi bi-map"></i> Open in Maps
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="getDirections()">
+                      <i class="bi bi-signpost-2"></i> Get Directions
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Reviews Section -->
+        <div class="card border-0 shadow-sm mb-4">
+          <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">
+              <% if (listing.reviews && listing.reviews.length > 0) { %>
+                <% 
+                  const avg = listing.reviews.reduce((total, review) => total + review.rating, 0) / listing.reviews.length;
+                  const fullStars = Math.floor(avg);
+                  const halfStar = avg - fullStars >= 0.5;
+                %>
+                <span class="text-warning">
+                  <% for(let i = 0; i < fullStars; i++) { %>
+                    <i class="bi bi-star-fill"></i>
+                  <% } %>
+                  <% if (halfStar) { %>
+                    <i class="bi bi-star-half"></i>
+                  <% } %>
+                  <% for(let i = fullStars + (halfStar ? 1 : 0); i < 5; i++) { %>
+                    <i class="bi bi-star"></i>
+                  <% } %>
+                </span>
+                <%= avg.toFixed(1) %> · <%= listing.reviews.length %> review<%= listing.reviews.length > 1 ? 's' : '' %>
+              <% } else { %>
+                <i class="bi bi-star text-warning"></i> No reviews yet
+              <% } %>
+            </h4>
+            <button class="btn btn-primary px-4" type="button" data-bs-toggle="collapse" data-bs-target="#reviewForm">
+              <i class="bi bi-plus-circle"></i> Write a Review
+            </button>
+          </div>
+          
+          <!-- Collapsible Review Form -->
+          <div class="collapse" id="reviewForm">
+            <div class="card-body border-bottom bg-light">
+              <form action="/listings/<%= listing._id %>/reviews" method="POST" class="needs-validation" novalidate>
+                
+                <!-- Slot Machine Rating Selection -->
+                <div class="mb-3">
+                  <label class="form-label d-flex justify-content-between align-items-center">
+                    <span>Rating</span>
+                    <span class="rating-value text-warning">
+                      <span id="ratingValue">5</span> 
+                      <i class="bi bi-star-fill"></i>
+                    </span>
+                  </label>
+                  
+                  <!-- Hidden input for form submission -->
+                  <input type="hidden" name="review[rating]" id="ratingInput" value="5">
+                  
+                  <!-- Slot Machine Rating Interface -->
+                  <div class="slot-machine-container">
+                    <div class="slot-machine-header">
+                      <h6 class="text-center mb-3">🎰 Rate Your Experience</h6>
+                    </div>
+                    
+                    <div class="slot-machine-display">
+                      <div class="rating-slots d-flex justify-content-center gap-2 mb-3">
+                        <div class="slot-reel" data-rating="1">
+                          <div class="slot-symbols">
+                            <div class="slot-symbol" data-value="1">⭐</div>
+                            <div class="slot-symbol" data-value="2">⭐⭐</div>
+                            <div class="slot-symbol" data-value="3">⭐⭐⭐</div>
+                            <div class="slot-symbol" data-value="4">⭐⭐⭐⭐</div>
+                            <div class="slot-symbol active" data-value="5">⭐⭐⭐⭐⭐</div>
+                          </div>
+                        </div>
+                        <div class="slot-reel" data-rating="2">
+                          <div class="slot-symbols">
+                            <div class="slot-symbol" data-value="1">😢</div>
+                            <div class="slot-symbol" data-value="2">😐</div>
+                            <div class="slot-symbol" data-value="3">😊</div>
+                            <div class="slot-symbol" data-value="4">😍</div>
+                            <div class="slot-symbol active" data-value="5">🤩</div>
+                          </div>
+                        </div>
+                        <div class="slot-reel" data-rating="3">
+                          <div class="slot-symbols">
+                            <div class="slot-symbol" data-value="1">👎</div>
+                            <div class="slot-symbol" data-value="2">✋</div>
+                            <div class="slot-symbol" data-value="3">👌</div>
+                            <div class="slot-symbol" data-value="4">👍</div>
+                            <div class="slot-symbol active" data-value="5">🏆</div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <!-- Rating Display -->
+                      <div class="rating-display text-center mb-3">
+                        <div class="current-rating">
+                          <span class="display-6 fw-bold text-warning" id="displayRating">5</span>
+                          <div class="rating-text">
+                            <span id="ratingLabel" class="badge bg-success fs-6">Excellent</span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <!-- Slot Machine Controls -->
+                      <div class="slot-controls text-center">
+                        <button type="button" class="btn btn-primary btn-lg" id="spinButton">
+                          <i class="bi bi-arrow-clockwise"></i> Spin to Rate!
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary ms-2" id="manualRateButton">
+                          Manual Rate
+                        </button>
+                      </div>
+                      
+                      <!-- Manual Rating Selector (Hidden by default) -->
+                      <div class="manual-rating mt-3 d-none" id="manualRating">
+                        <div class="d-flex justify-content-center gap-2">
+                          <button type="button" class="btn btn-outline-warning rating-btn" data-rating="1">1⭐</button>
+                          <button type="button" class="btn btn-outline-warning rating-btn" data-rating="2">2⭐</button>
+                          <button type="button" class="btn btn-outline-warning rating-btn" data-rating="3">3⭐</button>
+                          <button type="button" class="btn btn-warning rating-btn" data-rating="4">4⭐</button>
+                          <button type="button" class="btn btn-warning rating-btn" data-rating="5">5⭐</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Review Text -->
+                <div class="mb-3">
+                  <label class="form-label">Your Review</label>
+                  <textarea class="form-control" 
+                            name="review[comment]" 
+                            rows="4" 
+                            placeholder="Share your experience with this place..."
+                            required></textarea>
+                  <div class="invalid-feedback">
+                    Please provide a review comment.
+                  </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                  <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-send"></i> Submit Review
+                  </button>
+                  <button type="button" class="btn btn-secondary" data-bs-toggle="collapse" data-bs-target="#reviewForm">
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Reviews List -->
+          <div class="card-body p-0">
+            <% if (listing.reviews && listing.reviews.length > 0) { %>
+              <div class="review-list">
+                <% listing.reviews.forEach((review, index) => { %>
+                  <div class="review-item p-4 <%= index !== listing.reviews.length - 1 ? 'border-bottom' : '' %>">
+                    <div class="d-flex justify-content-between align-items-start">
+                      <div class="flex-grow-1">
+                        <div class="d-flex align-items-center mb-2">
+                          <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-3" 
+                               style="width: 40px; height: 40px;">
+                            <i class="bi bi-person-fill text-white"></i>
+                          </div>
+                          <div>
+                            <h6 class="mb-0 fw-bold">
+                              <%= review.author && review.author.username ? review.author.username : 'Anonymous' %>
+                            </h6>
+                            <div class="text-warning">
+                              <% 
+                                const rFull = Math.floor(review.rating || 0);
+                                const rHalf = (review.rating || 0) - rFull >= 0.5;
+                                for(let i = 0; i < rFull; i++) { %>
+                                  <i class="bi bi-star-fill"></i>
+                              <% } %>
+                              <% if (rHalf) { %>
+                                <i class="bi bi-star-half"></i>
+                              <% } %>
+                              <% for(let i = rFull + (rHalf ? 1 : 0); i < 5; i++) { %>
+                                <i class="bi bi-star"></i>
+                              <% } %>
+                              <small class="text-muted ms-2"><%= review.rating || 0 %>/5</small>
+                            </div>
+                          </div>
+                        </div>
+                        <p class="review-text text-dark mb-2 ms-5 ps-2">
+                          "<%= review.comment || 'No comment provided' %>"
+                        </p>
+                        <small class="text-muted ms-5 ps-2">
+                          <i class="bi bi-clock"></i> 
+                          <%= review.createdAt ? new Date(review.createdAt).toLocaleDateString() : 'Recently' %>
+                        </small>
+                      </div>
+                      <% if (currentUser && review.author && review.author._id.equals(currentUser._id)) { %>
+                        <div class="dropdown">
+                          <button class="btn btn-sm btn-light" type="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-three-dots-vertical"></i>
+                          </button>
+                          <ul class="dropdown-menu">
+                            <li>
+                              <form action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE" 
+                                    method="POST" 
+                                    class="dropdown-item p-0">
+                                <button class="btn btn-link text-danger text-decoration-none w-100 text-start p-2" 
+                                        type="submit"
+                                        onclick="return confirm('Are you sure you want to delete this review?')">
+                                  <i class="bi bi-trash me-2"></i>Delete Review
+                                </button>
+                              </form>
+                            </li>
+                          </ul>
+                        </div>
+                      <% } %>
+                    </div>
+                  </div>
+                <% }) %>
+              </div>
+            <% } else { %>
+              <div class="p-5 text-center text-muted">
+                <div class="mb-3">
+                  <i class="bi bi-chat-square-text display-4 text-muted"></i>
+                </div>
+                <h5 class="text-muted">No reviews yet</h5>
+                <p class="mb-0">Be the first to share your experience!</p>
+              </div>
+            <% } %>
+          </div>
+        </div>
+
+      <% } else { %>
+        <!-- Enhanced Error State -->
+        <div class="text-center py-5">
+          <i class="bi bi-exclamation-triangle display-1 text-warning mb-4"></i>
+          <h3 class="mb-3">Listing Not Found</h3>
+          <p class="text-muted mb-4">The listing you're looking for doesn't exist or has been removed.</p>
+          <a href="/listings" class="btn btn-primary">
+            <i class="bi bi-house"></i> Browse All Listings
+          </a>
+        </div>
+      <% } %>
+
+    </div>
+  </div>
+</div>
+
+<!-- Booking Modal -->
+<div class="modal fade" id="bookingModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Reserve Your Stay</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="row mb-3">
+            <div class="col-6">
+              <label class="form-label">Check-in</label>
+              <input type="date" class="form-control" id="checkin">
+            </div>
+            <div class="col-6">
+              <label class="form-label">Check-out</label>
+              <input type="date" class="form-control" id="checkout">
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Guests</label>
+            <select class="form-select">
+              <option value="1">1 guest</option>
+              <option value="2">2 guests</option>
+              <option value="3">3 guests</option>
+              <option value="4">4 guests</option>
+            </select>
+          </div>
+          <div class="alert alert-info">
+            <strong>Total: </strong>₹<%= listing ? listing.price.toLocaleString("en-IN") : '0' %> × 1 night = ₹<%= listing ? listing.price.toLocaleString("en-IN") : '0' %>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary">Confirm Booking</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Image Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Property Photos</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-0">
+        <img src="<%= listing ? listing.image : '' %>" class="w-100" alt="Property Image">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Link to external JavaScript -->
+<script src="/js/main.js"></script>
+
+<script>
+// ========== LEAFLET MAP FUNCTIONALITY ==========
+
+// Initialize Leaflet Map
+async function initializePropertyMap() {
+  try {
+    // Hide loading state after a delay
+    setTimeout(() => {
+      const mapLoading = document.getElementById('mapLoading');
+      if (mapLoading) {
+        mapLoading.style.display = 'none';
+      }
+    }, 1000);
+    
+    // Initialize Leaflet map
+    const map = L.map('propertyMap').setView([0, 0], 13);
+    
+    // Add OpenStreetMap tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+      maxZoom: 19,
+      minZoom: 3
+    }).addTo(map);
+    
+    // Property location data
+    const location = '<%= listing.location %>';
+    const country = '<%= listing.country %>';
+    const title = '<%= listing.title %>';
+    const price = '₹<%= listing.price.toLocaleString("en-IN") %>';
+    
+    // Geocode the location
+    const geocodeUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location + ', ' + country)}&limit=1`;
+    
+    try {
+      const response = await fetch(geocodeUrl);
+      const data = await response.json();
+      
+      if (data && data.length > 0) {
+        const lat = parseFloat(data[0].lat);
+        const lon = parseFloat(data[0].lon);
+        
+        // Set map view to the location
+        map.setView([lat, lon], 13);
+        
+        // Create custom marker icon
+        const customIcon = L.divIcon({
+          className: 'custom-leaflet-marker',
+          html: `
+            <div class="marker-container">
+              <div class="marker-pin">
+                <i class="bi bi-geo-alt-fill"></i>
+              </div>
+              <div class="marker-pulse"></div>
+            </div>
+          `,
+          iconSize: [30, 30],
+          iconAnchor: [15, 30]
+        });
+        
+        // Add main property marker
+        const marker = L.marker([lat, lon], { icon: customIcon }).addTo(map);
+        
+        marker.bindPopup(`
+          <div class="popup-content">
+            <h6 class="mb-2">${title}</h6>
+            <p class="mb-1 text-muted">${location}, ${country}</p>
+            <div class="mt-2">
+              <span class="badge bg-success">${price}/night</span>
+            </div>
+            <div class="mt-2">
+              <button class="btn btn-sm btn-outline-primary" onclick="getDirections()">
+                <i class="bi bi-geo-alt"></i> Get Directions
+              </button>
+            </div>
+          </div>
+        `);
+        
+        // Add nearby POI markers (sample data)
+        const poisData = [
+          { name: 'City Center', icon: 'bi-building', color: '#ffc107', distance: '2.5 km', offset: [0.01, -0.01] },
+          { name: 'Metro Station', icon: 'bi-train-front', color: '#0dcaf0', distance: '800m', offset: [-0.008, 0.012] },
+          { name: 'Airport', icon: 'bi-airplane', color: '#0d6efd', distance: '15 km', offset: [0.015, 0.008] },
+          { name: 'Shopping Mall', icon: 'bi-shop', color: '#fd7e14', distance: '1.2 km', offset: [-0.012, -0.008] }
+        ];
+        
+        poisData.forEach(poi => {
+          const poiIcon = L.divIcon({
+            className: 'poi-leaflet-marker',
+            html: `<i class="${poi.icon}" style="color: ${poi.color}; font-size: 14px;"></i>`,
+            iconSize: [20, 20],
+            iconAnchor: [10, 10]
+          });
+          
+          const poiMarker = L.marker([lat + poi.offset[0], lon + poi.offset[1]], { icon: poiIcon }).addTo(map);
+          poiMarker.bindTooltip(`${poi.name} - ${poi.distance}`, { 
+            direction: 'top', 
+            offset: [0, -10],
+            className: 'custom-tooltip'
+          });
+          
+          poiMarker.bindPopup(`
+            <div class="poi-popup">
+              <h6>${poi.name}</h6>
+              <p class="mb-1">Distance: ${poi.distance}</p>
+            </div>
+          `);
+        });
+        
+        // Success message
+        if (typeof showFlashMessage === 'function') {
+          showFlashMessage('success', 'Map Loaded', 'Interactive map is ready to explore!', 2000);
+        }
+        
+      } else {
+        // Fallback to a default location (Mumbai, India)
+        map.setView([19.0760, 72.8777], 10);
+        
+        const fallbackMarker = L.marker([19.0760, 72.8777]).addTo(map);
+        fallbackMarker.bindPopup(`
+          <div class="popup-content">
+            <h6 class="mb-2">${title}</h6>
+            <p class="mb-1 text-muted">${location}, ${country}</p>
+            <p class="small text-warning">Approximate location</p>
+          </div>
+        `);
+        
+        if (typeof showFlashMessage === 'function') {
+          showFlashMessage('warning', 'Location Found', 'Showing approximate location');
+        }
+      }
+    } catch (geocodeError) {
+      console.log('Geocoding failed, using default location');
+      map.setView([19.0760, 72.8777], 10);
+      
+      const errorMarker = L.marker([19.0760, 72.8777]).addTo(map);
+      errorMarker.bindPopup(`
+        <div class="popup-content">
+          <h6 class="mb-2">${title}</h6>
+          <p class="mb-1 text-muted">${location}, ${country}</p>
+          <p class="small text-info">Default location shown</p>
+        </div>
+      `);
+    }
+    
+    // Store map instance globally for external functions
+    window.propertyMap = map;
+    
+  } catch (error) {
+    console.error('Map initialization failed:', error);
+    const mapContainer = document.getElementById('propertyMap');
+    if (mapContainer) {
+      mapContainer.innerHTML = `
+        <div class="d-flex align-items-center justify-content-center h-100 bg-light">
+          <div class="text-center">
+            <i class="bi bi-exclamation-triangle text-warning" style="font-size: 2rem;"></i>
+            <h6 class="mt-2">Map unavailable</h6>
+            <p class="mb-0 text-muted">Location: <%= listing.location %>, <%= listing.country %></p>
+          </div>
+        </div>
+      `;
+    }
+  }
+}
+
+// External map functions
+function openInMaps() {
+  const location = encodeURIComponent('<%= listing.location %>, <%= listing.country %>');
+  const mapsUrl = `https://www.google.com/maps/search/${location}`;
+  
+  if (typeof showFlashMessage === 'function') {
+    showFlashMessage('info', 'Opening Maps', 'Redirecting to Google Maps...');
+  }
+  
+  setTimeout(() => {
+    window.open(mapsUrl, '_blank');
+  }, 800);
+}
+
+function getDirections() {
+  const location = encodeURIComponent('<%= listing.location %>, <%= listing.country %>');
+  const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${location}`;
+  
+  if (typeof showFlashMessage === 'function') {
+    showFlashMessage('info', 'Getting Directions', 'Opening directions in Google Maps...');
+  }
+  
+  setTimeout(() => {
+    window.open(directionsUrl, '_blank');
+  }, 800);
+}
+
+// Add ripple effect animation to CSS
+if (!document.querySelector('#ripple-effect-style')) {
+  const style = document.createElement('style');
+  style.id = 'ripple-effect-style';
+  style.textContent = `
+    @keyframes ripple-effect {
+      0% {
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 1;
+      }
+      100% {
+        transform: translate(-50%, -50%) scale(2);
+        opacity: 0;
+      }
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  // Initialize property map
+  initializePropertyMap();
+  
+  // Slot Machine Rating System
+  const slotMachine = {
+    currentRating: 5,
+    isSpinning: false,
+    
+    // Rating labels
+    labels: {
+      1: { text: 'Poor', class: 'bg-danger' },
+      2: { text: 'Fair', class: 'bg-warning' },
+      3: { text: 'Good', class: 'bg-info' },
+      4: { text: 'Very Good', class: 'bg-primary' },
+      5: { text: 'Excellent', class: 'bg-success' }
+    },
+    
+    init() {
+      this.bindEvents();
+      this.updateDisplay();
+      this.updateReels(this.currentRating);
+    },
+    
+    bindEvents() {
+      const spinButton = document.getElementById('spinButton');
+      const manualRateButton = document.getElementById('manualRateButton');
+      const manualRating = document.getElementById('manualRating');
+      const ratingButtons = document.querySelectorAll('.rating-btn');
+      
+      if (spinButton) {
+        spinButton.addEventListener('click', () => this.spin());
+      }
+      
+      if (manualRateButton) {
+        manualRateButton.addEventListener('click', () => {
+          manualRating.classList.toggle('d-none');
+        });
+      }
+      
+      ratingButtons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const rating = parseInt(e.target.dataset.rating);
+          this.setRating(rating);
+          this.updateManualButtons();
+        });
+      });
+    },
+    
+    spin() {
+      if (this.isSpinning) return;
+      
+      this.isSpinning = true;
+      const spinButton = document.getElementById('spinButton');
+      const container = document.querySelector('.slot-machine-container');
+      const reels = document.querySelectorAll('.slot-reel');
+      
+      // Add spinning class
+      spinButton.classList.add('spinning');
+      spinButton.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Spinning...';
+      
+      // Spin animation
+      reels.forEach((reel, index) => {
+        const symbols = reel.querySelector('.slot-symbols');
+        symbols.classList.add('spinning');
+        
+        // Stop spinning after different delays for each reel
+        setTimeout(() => {
+          symbols.classList.remove('spinning');
+          this.setRandomPosition(reel, index);
+        }, 1000 + (index * 300));
+      });
+      
+      // Final result
+      setTimeout(() => {
+        const newRating = Math.floor(Math.random() * 5) + 1;
+        this.setRating(newRating);
+        
+        // Show jackpot effect for rating 5
+        if (newRating === 5) {
+          this.showJackpotEffect(container);
+        }
+        
+        // Reset button
+        spinButton.classList.remove('spinning');
+        spinButton.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Spin Again!';
+        this.isSpinning = false;
+        
+        // Add celebration animation
+        if (newRating >= 4) {
+          container.classList.add('winning');
+          setTimeout(() => container.classList.remove('winning'), 1000);
+        }
+        
+      }, 2500);
+    },
+    
+    setRandomPosition(reel, reelIndex) {
+      const symbols = reel.querySelector('.slot-symbols');
+      const randomOffset = Math.floor(Math.random() * 5) * 80;
+      symbols.style.transform = `translateY(-${randomOffset}px)`;
+    },
+    
+    setRating(rating) {
+      this.currentRating = rating;
+      this.updateDisplay();
+      this.updateReels(rating);
+      
+      // Update form input
+      const ratingInput = document.getElementById('ratingInput');
+      if (ratingInput) {
+        ratingInput.value = rating;
+      }
+    },
+    
+    updateDisplay() {
+      const displayRating = document.getElementById('displayRating');
+      const ratingLabel = document.getElementById('ratingLabel');
+      const ratingValue = document.getElementById('ratingValue');
+      
+      if (displayRating) displayRating.textContent = this.currentRating;
+      if (ratingValue) ratingValue.textContent = this.currentRating;
+      
+      if (ratingLabel) {
+        const label = this.labels[this.currentRating];
+        ratingLabel.textContent = label.text;
+        ratingLabel.className = `badge ${label.class} fs-6`;
+      }
+    },
+    
+    updateReels(rating) {
+      const reels = document.querySelectorAll('.slot-reel');
+      reels.forEach(reel => {
+        const symbols = reel.querySelectorAll('.slot-symbol');
+        symbols.forEach(symbol => symbol.classList.remove('active'));
+        
+        const activeSymbol = reel.querySelector(`[data-value="${rating}"]`);
+        if (activeSymbol) {
+          activeSymbol.classList.add('active');
+        }
+        
+        // Position the reel to show the active symbol
+        const symbolsContainer = reel.querySelector('.slot-symbols');
+        if (symbolsContainer) {
+          // Calculate the correct offset - 5th symbol (index 4) should be at top
+          const targetOffset = (rating - 1) * 80;
+          symbolsContainer.style.transform = `translateY(-${targetOffset}px)`;
+        }
+      });
+    },
+    
+    updateManualButtons() {
+      const buttons = document.querySelectorAll('.rating-btn');
+      buttons.forEach(btn => {
+        btn.classList.remove('active');
+        if (parseInt(btn.dataset.rating) === this.currentRating) {
+          btn.classList.add('active');
+        }
+      });
+    },
+    
+    showJackpotEffect(container) {
+      const effect = document.createElement('div');
+      effect.className = 'jackpot-effect';
+      container.appendChild(effect);
+      
+      setTimeout(() => {
+        if (effect.parentNode) {
+          effect.parentNode.removeChild(effect);
+        }
+      }, 2000);
+      
+      // Play celebration sound
+      this.playCelebrationSound();
+    },
+    
+    playCelebrationSound() {
+      // Create audio context for celebration sound
+      try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+        oscillator.frequency.setValueAtTime(1200, audioContext.currentTime + 0.1);
+        oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.2);
+        
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+        
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.3);
+      } catch (error) {
+        console.log('Audio not supported');
+      }
+    }
+  };
+  
+  // Initialize slot machine
+  slotMachine.init();
+
+  // Flash message function
+  function showFlashMessage(type, title, message, duration = 5000) {
+    const alertHTML = `
+      <div class="alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show shadow-sm border-0 position-fixed" 
+           style="top: 20px; right: 20px; z-index: 9999; max-width: 400px;" role="alert">
+        <div class="d-flex align-items-center">
+          <i class="bi bi-${type === 'success' ? 'check-circle-fill' : type === 'error' ? 'exclamation-triangle-fill' : 'info-circle-fill'} me-2 fs-5"></i>
+          <strong>${title}!</strong> ${message}
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', alertHTML);
+    
+    setTimeout(() => {
+      const alerts = document.querySelectorAll('.alert.position-fixed');
+      const latestAlert = alerts[alerts.length - 1];
+      if (latestAlert && typeof bootstrap !== 'undefined') {
+        const bsAlert = new bootstrap.Alert(latestAlert);
+        bsAlert.close();
+      }
+    }, duration);
+  }
+
+  // Enhanced favorite functionality
+  window.toggleFavorite = function() {
+    try {
+      const btn = document.getElementById('favoriteBtn');
+      const icon = btn.querySelector('i');
+      
+      if (icon.classList.contains('bi-heart')) {
+        icon.classList.remove('bi-heart');
+        icon.classList.add('bi-heart-fill');
+        btn.classList.add('text-danger');
+        showFlashMessage('success', 'Added to Favorites', 'This property has been added to your favorites.');
+      } else {
+        icon.classList.remove('bi-heart-fill');
+        icon.classList.add('bi-heart');
+        btn.classList.remove('text-danger');
+        showFlashMessage('info', 'Removed from Favorites', 'This property has been removed from your favorites.');
+      }
+    } catch (error) {
+      showFlashMessage('error', 'Error', 'Unable to update favorites. Please try again.');
+      console.error('Favorite error:', error);
+    }
+  };
+
+  // Enhanced booking modal
+  window.showBookingModal = function() {
+    try {
+      const modal = new bootstrap.Modal(document.getElementById('bookingModal'));
+      modal.show();
+    } catch (error) {
+      showFlashMessage('error', 'Error', 'Unable to open booking modal. Please refresh the page.');
+      console.error('Booking modal error:', error);
+    }
+  };
+
+  // Enhanced wishlist functionality
+  window.addToWishlist = function() {
+    try {
+      showFlashMessage('info', 'Adding to Wishlist', 'Please wait...');
+      setTimeout(() => {
+        showFlashMessage('success', 'Added to Wishlist', 'Property successfully added to your wishlist!');
+      }, 1000);
+    } catch (error) {
+      showFlashMessage('error', 'Error', 'Unable to add to wishlist. Please try again.');
+      console.error('Wishlist error:', error);
+    }
+  };
+
+  // Enhanced share functionality
+  window.shareProperty = function() {
+    try {
+      const title = '<%= listing ? listing.title : "Property" %>';
+      const url = window.location.href;
+      
+      if (navigator.share) {
+        navigator.share({
+          title: title,
+          text: 'Check out this amazing property!',
+          url: url
+        }).then(() => {
+          showFlashMessage('success', 'Shared', 'Property shared successfully!');
+        }).catch((error) => {
+          if (error.name !== 'AbortError') {
+            fallbackShare(url);
+          }
+        });
+      } else {
+        fallbackShare(url);
+      }
+    } catch (error) {
+      showFlashMessage('error', 'Share Error', 'Unable to share property.');
+      console.error('Share error:', error);
+    }
+  };
+
+  function fallbackShare(url) {
+    try {
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(url).then(() => {
+          showFlashMessage('success', 'Link Copied', 'Property link copied to clipboard!');
+        }).catch(() => {
+          showFlashMessage('warning', 'Share', 'Please copy the URL manually.');
+        });
+      } else {
+        showFlashMessage('warning', 'Share', 'Please copy the URL manually from your browser address bar.');
+      }
+    } catch (error) {
+      showFlashMessage('warning', 'Share', 'Please copy the URL manually.');
+    }
+  }
+
+  // Auto-dismiss server-side alerts
+  const alerts = document.querySelectorAll('.alert:not(.position-fixed)');
+  alerts.forEach(alert => {
+    setTimeout(() => {
+      if (typeof bootstrap !== 'undefined') {
+        const alertInstance = new bootstrap.Alert(alert);
+        alertInstance.close();
+      }
+    }, 5000);
+  });
+
+  // Form validation
+  const forms = document.getElementsByClassName('needs-validation');
+  Array.prototype.forEach.call(forms, function(form) {
+    form.addEventListener('submit', function(event) {
+      if (form.checkValidity() === false) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      form.classList.add('was-validated');
+    }, false);
+  });
+});
+
+// Make map functions globally available
+window.zoomIn = zoomIn;
+window.zoomOut = zoomOut;
+window.centerMap = centerMap;
+window.openInMaps = openInMaps;
+window.getDirections = getDirections;
+</script>
+
+<style>
+.breadcrumb-item + .breadcrumb-item::before {
+  content: "›";
+  font-weight: bold;
+}
+
+.card:hover {
+  box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  transition: all 0.2s ease;
+}
+
+/* Flash message styling */
+.alert {
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  border-left: 4px solid;
+  animation: slideInDown 0.5s ease-out;
+  position: relative;
+  z-index: 1000;
+}
+
+.alert-success {
+  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+  border-left-color: #28a745;
+  color: #155724;
+}
+
+.alert-danger {
+  background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+  border-left-color: #dc3545;
+  color: #721c24;
+}
+
+@keyframes slideInDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .display-6 {
+    font-size: 1.75rem;
+  }
+  
+  .col-md-4 {
+    margin-top: 2rem;
+  }
+}
+
+/* Slot machine rating styling */
+.slot-machine-container {
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #f8f9fa;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.slot-machine-header {
+  background-color: #343a40;
+  color: #ffffff;
+  padding: 0.75rem;
+  text-align: center;
+}
+
+.slot-machine-display {
+  padding: 1rem;
+}
+
+.rating-slots {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.slot-reel {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.slot-symbols {
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.5s cubic-bezier(0.5, 1.5, 0.5, 1);
+}
+
+.slot-symbol {
+  font-size: 2rem;
+  text-align: center;
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+}
+
+.slot-symbol.active {
+  opacity: 1;
+  transform: scale(1.2);
+}
+
+.spinning {
+  animation: spin 1s infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotateX(0deg); }
+  100% { transform: rotateX(360deg); }
+}
+
+/* Review form enhancements */
+.collapse.show {
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Slot machine specific styles */
+.jackpot-effect {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 300%;
+  height: 300%;
+  background: radial-gradient(circle, rgba(255,215,0,0.8) 0%, rgba(255,215,0,0) 70%);
+  border-radius: 50%;
+  animation: jackpotAnim 1.5s ease-out forwards;
+  pointer-events: none;
+  z-index: 10;
+}
+
+@keyframes jackpotAnim {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+  }
+}
+</style>
+
+<script>
+  // Form validation
+  (function() {
+    'use strict';
+    window.addEventListener('load', function() {
+      var forms = document.getElementsByClassName('needs-validation');
+      var validation = Array.prototype.filter.call(forms, function(form) {
+        form.addEventListener('submit', function(event) {
+          if (form.checkValidity() === false) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+          form.classList.add('was-validated');
+        }, false);
+      });
+    }, false);
+  })();
+</script>
+
+<script>
+  slotMachine.init();
+  
+ 
+
+</script>
+
+<style>
+.breadcrumb-item + .breadcrumb-item::before {
+  content: "›";
+  font-weight: bold;
+}
+
+.card:hover {
+  box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  transition: all 0.2s ease;
+}
+
+/* Flash message styling */
+.alert {
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  border-left: 4px solid;
+  animation: slideInDown 0.5s ease-out;
+  position: relative;
+  z-index: 1000;
+}
+
+.alert-success {
+  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+  border-left-color: #28a745;
+  color: #155724;
+}
+
+.alert-danger {
+  background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+  border-left-color: #dc3545;
+  color: #721c24;
+}
+
+@keyframes slideInDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .display-6 {
+    font-size: 1.75rem;
+  }
+  
+  .col-md-4 {
+    margin-top: 2rem;
+  }
+}
+
+/* Slot machine rating styling */
+.slot-machine-container {
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #f8f9fa;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.slot-machine-header {
+  background-color: #343a40;
+  color: #ffffff;
+  padding: 0.75rem;
+  text-align: center;
+}
+
+.slot-machine-display {
+  padding: 1rem;
+}
+
+.rating-slots {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.slot-reel {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.slot-symbols {
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.5s cubic-bezier(0.5, 1.5, 0.5, 1);
+}
+
+.slot-symbol {
+  font-size: 2rem;
+  text-align: center;
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+}
+
+.slot-symbol.active {
+  opacity: 1;
+  transform: scale(1.2);
+}
+
+.spinning {
+  animation: spin 1s infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotateX(0deg); }
+  100% { transform: rotateX(360deg); }
+}
+
+/* Review form enhancements */
+.collapse.show {
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Slot machine specific styles */
+.jackpot-effect {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 300%;
+  height: 300%;
+  background: radial-gradient(circle, rgba(255,215,0,0.8) 0%, rgba(255,215,0,0) 70%);
+  border-radius: 50%;
+  animation: jackpotAnim 1.5s ease-out forwards;
+  pointer-events: none;
+  z-index: 10;
+}
+
+@keyframes jackpotAnim {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+  }
+}
+</style>
+
+<script>
+  // Form validation
+  (function() {
+    'use strict';
+    window.addEventListener('load', function() {
+      var forms = document.getElementsByClassName('needs-validation');
+      var validation = Array.prototype.filter.call(forms, function(form) {
+        form.addEventListener('submit', function(event) {
+          if (form.checkValidity() === false) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+          form.classList.add('was-validated');
+        }, false);
+      });
+    }, false);
+  })();
+</script>
+

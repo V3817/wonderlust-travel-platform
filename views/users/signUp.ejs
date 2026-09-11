@@ -1,0 +1,470 @@
+<% layout("/layouts/boilerplate") %>
+
+<!-- Flash Messages Container -->
+<div id="flashContainer">
+  <% if (success && success.length > 0) { %>
+    <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 mx-3 mt-3" role="alert">
+      <div class="d-flex align-items-center">
+        <i class="bi bi-check-circle-fill me-2 fs-5"></i>
+        <strong>Success!</strong> <%= success %>
+      </div>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  <% } %>
+
+  <% if (error && error.length > 0) { %>
+    <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0 mx-3 mt-3" role="alert">
+      <div class="d-flex align-items-center">
+        <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+        <strong>Error!</strong> <%= error %>
+      </div>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  <% } %>
+</div>
+
+<div class="min-vh-100 d-flex align-items-center" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-6 col-lg-5">
+        <div class="card shadow-lg border-0 rounded-4">
+          <div class="card-header bg-white text-center py-4 border-0 rounded-top-4">
+            <div class="mb-3">
+              <i class="bi bi-person-plus-fill text-primary" style="font-size: 3rem;"></i>
+            </div>
+            <h3 class="fw-bold mb-2">Join WonderLust</h3>
+            <p class="text-muted mb-0">Create your account and start exploring amazing stays</p>
+          </div>
+          
+          <div class="card-body p-5">
+            <form action="/signup" method="POST" class="needs-validation" novalidate id="signupForm">
+              
+              <!-- Username Field -->
+              <div class="mb-4">
+                <label for="username" class="form-label fw-semibold">
+                  <i class="bi bi-person text-primary me-2"></i>Username
+                </label>
+                <input type="text" 
+                       class="form-control form-control-lg" 
+                       id="username" 
+                       name="username" 
+                       placeholder="Enter your username"
+                       required
+                       minlength="3"
+                       maxlength="20">
+                <div class="invalid-feedback">
+                  Username must be between 3-20 characters.
+                </div>
+                <div class="form-text">
+                  Choose a unique username that others will see
+                </div>
+              </div>
+
+              <!-- Email Field -->
+              <div class="mb-4">
+                <label for="email" class="form-label fw-semibold">
+                  <i class="bi bi-envelope text-success me-2"></i>Email Address
+                </label>
+                <input type="email" 
+                       class="form-control form-control-lg" 
+                       id="email" 
+                       name="email" 
+                       placeholder="Enter your email address"
+                       required>
+                <div class="invalid-feedback">
+                  Please enter a valid email address.
+                </div>
+                <div class="form-text">
+                  We'll never share your email with anyone else
+                </div>
+              </div>
+
+              <!-- Password Field -->
+              <div class="mb-4">
+                <label for="password" class="form-label fw-semibold">
+                  <i class="bi bi-lock text-warning me-2"></i>Password
+                </label>
+                <div class="input-group">
+                  <input type="password" 
+                         class="form-control form-control-lg" 
+                         id="password" 
+                         name="password" 
+                         placeholder="Enter your password"
+                         required
+                         minlength="6">
+                  <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                    <i class="bi bi-eye" id="toggleIcon"></i>
+                  </button>
+                </div>
+                <div class="invalid-feedback">
+                  Password must be at least 6 characters long.
+                </div>
+                <div class="form-text">
+                  <div id="passwordStrength" class="password-strength mt-2">
+                    <div class="strength-bar">
+                      <div class="strength-fill" id="strengthFill"></div>
+                    </div>
+                    <small id="strengthText" class="text-muted">Enter a password to see strength</small>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Confirm Password Field -->
+              <div class="mb-4">
+                <label for="confirmPassword" class="form-label fw-semibold">
+                  <i class="bi bi-lock-fill text-danger me-2"></i>Confirm Password
+                </label>
+                <div class="input-group">
+                  <input type="password" 
+                         class="form-control form-control-lg" 
+                         id="confirmPassword" 
+                         name="confirmPassword" 
+                         placeholder="Confirm your password"
+                         required>
+                  <button class="btn btn-outline-secondary" type="button" id="toggleConfirmPassword">
+                    <i class="bi bi-eye" id="toggleConfirmIcon"></i>
+                  </button>
+                </div>
+                <div class="invalid-feedback" id="confirmPasswordFeedback">
+                  Passwords do not match.
+                </div>
+              </div>
+
+              <!-- Terms and Conditions -->
+              <div class="mb-4">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="terms" required>
+                  <label class="form-check-label" for="terms">
+                    I agree to the <a href="#" class="text-primary">Terms of Service</a> and 
+                    <a href="#" class="text-primary">Privacy Policy</a>
+                  </label>
+                  <div class="invalid-feedback">
+                    You must agree to the terms and conditions.
+                  </div>
+                </div>
+              </div>
+
+              <!-- Submit Button -->
+              <div class="d-grid mb-4">
+                <button type="submit" class="btn btn-primary btn-lg rounded-3" id="submitBtn">
+                  <i class="bi bi-person-plus me-2"></i>Create Account
+                </button>
+              </div>
+
+              <!-- Login Link -->
+              <div class="text-center">
+                <p class="text-muted mb-0">
+                  Already have an account? 
+                  <a href="/login" class="text-primary fw-semibold text-decoration-none">Sign In</a>
+                </p>
+              </div>
+
+            </form>
+          </div>
+        </div>
+
+        <!-- Additional Info Card -->
+        <div class="card border-0 shadow-sm mt-4 bg-light">
+          <div class="card-body text-center p-4">
+            <h6 class="text-primary mb-2">
+              <i class="bi bi-shield-check me-2"></i>Why Join WonderLust?
+            </h6>
+            <div class="row text-center">
+              <div class="col-4">
+                <i class="bi bi-house-heart text-success mb-2" style="font-size: 1.5rem;"></i>
+                <small class="d-block text-muted">List Properties</small>
+              </div>
+              <div class="col-4">
+                <i class="bi bi-heart text-danger mb-2" style="font-size: 1.5rem;"></i>
+                <small class="d-block text-muted">Save Favorites</small>
+              </div>
+              <div class="col-4">
+                <i class="bi bi-star text-warning mb-2" style="font-size: 1.5rem;"></i>
+                <small class="d-block text-muted">Write Reviews</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+/* Flash message styling */
+.alert {
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  border-left: 4px solid;
+  animation: slideInDown 0.5s ease-out;
+}
+
+.alert-success {
+  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+  border-left-color: #28a745;
+  color: #155724;
+}
+
+.alert-danger {
+  background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+  border-left-color: #dc3545;
+  color: #721c24;
+}
+
+@keyframes slideInDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Password strength indicator */
+.password-strength {
+  margin-top: 8px;
+}
+
+.strength-bar {
+  height: 4px;
+  background-color: #e9ecef;
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 5px;
+}
+
+.strength-fill {
+  height: 100%;
+  width: 0%;
+  transition: all 0.3s ease;
+  border-radius: 2px;
+}
+
+.strength-weak { background-color: #dc3545; }
+.strength-fair { background-color: #ffc107; }
+.strength-good { background-color: #fd7e14; }
+.strength-strong { background-color: #28a745; }
+
+/* Card styling */
+.card {
+  backdrop-filter: blur(10px);
+}
+
+/* Button hover effects */
+.btn:hover {
+  transform: translateY(-2px);
+  transition: all 0.3s ease;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .card-body {
+    padding: 2rem !important;
+  }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  try {
+    // Flash message function with better error handling
+    function showFlashMessage(type, title, message, duration = 5000) {
+      try {
+        const flashContainer = document.getElementById('flashContainer');
+        if (!flashContainer) {
+          console.error('Flash container not found');
+          return;
+        }
+        
+        const alertId = 'alert-' + Date.now();
+        const iconClass = type === 'success' ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill';
+        
+        const alertHTML = `
+          <div class="alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show shadow-sm border-0 mx-3 mt-3" role="alert" id="${alertId}">
+            <div class="d-flex align-items-center">
+              <i class="${iconClass} me-2 fs-5"></i>
+              <strong>${title}!</strong> ${message}
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        `;
+        
+        flashContainer.insertAdjacentHTML('beforeend', alertHTML);
+        
+        setTimeout(() => {
+          const alert = document.getElementById(alertId);
+          if (alert && typeof bootstrap !== 'undefined') {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+          }
+        }, duration);
+      } catch (error) {
+        console.error('Error showing flash message:', error);
+      }
+    }
+
+    const passwordInput = document.getElementById('password');
+
+    // Password strength checker
+    const strengthFill = document.getElementById('strengthFill');
+    const strengthText = document.getElementById('strengthText');
+
+    function checkPasswordStrength(password) {
+      let strength = 0;
+      let feedback = '';
+
+      if (password.length >= 6) strength += 1;
+      if (password.length >= 8) strength += 1;
+      if (/[a-z]/.test(password)) strength += 1;
+      if (/[A-Z]/.test(password)) strength += 1;
+      if (/[0-9]/.test(password)) strength += 1;
+      if (/[^A-Za-z0-9]/.test(password)) strength += 1;
+
+      strengthFill.className = 'strength-fill';
+      
+      if (strength <= 2) {
+        strengthFill.classList.add('strength-weak');
+        strengthFill.style.width = '25%';
+        feedback = 'Weak password';
+      } else if (strength <= 3) {
+        strengthFill.classList.add('strength-fair');
+        strengthFill.style.width = '50%';
+        feedback = 'Fair password';
+      } else if (strength <= 4) {
+        strengthFill.classList.add('strength-good');
+        strengthFill.style.width = '75%';
+        feedback = 'Good password';
+      } else {
+        strengthFill.classList.add('strength-strong');
+        strengthFill.style.width = '100%';
+        feedback = 'Strong password';
+      }
+
+      strengthText.textContent = feedback;
+      return strength;
+    }
+
+    passwordInput.addEventListener('input', function() {
+      const password = this.value;
+      if (password.length > 0) {
+        checkPasswordStrength(password);
+      } else {
+        strengthFill.style.width = '0%';
+        strengthText.textContent = 'Enter a password to see strength';
+      }
+    });
+
+    // Confirm password validation
+    const confirmPasswordInput = document.getElementById('confirmPassword');
+    const confirmPasswordFeedback = document.getElementById('confirmPasswordFeedback');
+
+    function validatePasswordMatch() {
+      const password = passwordInput.value;
+      const confirmPassword = confirmPasswordInput.value;
+
+      if (confirmPassword && password !== confirmPassword) {
+        confirmPasswordInput.setCustomValidity('Passwords do not match');
+        confirmPasswordFeedback.textContent = 'Passwords do not match';
+      } else {
+        confirmPasswordInput.setCustomValidity('');
+        confirmPasswordFeedback.textContent = '';
+      }
+    }
+
+    passwordInput.addEventListener('input', validatePasswordMatch);
+    confirmPasswordInput.addEventListener('input', validatePasswordMatch);
+
+    // Form validation
+    const form = document.getElementById('signupForm');
+    const submitBtn = document.getElementById('submitBtn');
+
+    if (form && submitBtn) {
+      form.addEventListener('submit', function(event) {
+        try {
+          let isValid = true;
+          const username = document.getElementById('username')?.value || '';
+          const email = document.getElementById('email')?.value || '';
+          const password = passwordInput?.value || '';
+          const confirmPassword = document.getElementById('confirmPassword')?.value || '';
+          const terms = document.getElementById('terms')?.checked || false;
+
+          // Validation logic with safe checks
+          if (username.length < 3 || username.length > 20) {
+            showFlashMessage('error', 'Validation Error', 'Username must be between 3-20 characters.');
+            isValid = false;
+          }
+
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailRegex.test(email)) {
+            showFlashMessage('error', 'Validation Error', 'Please enter a valid email address.');
+            isValid = false;
+          }
+
+          if (password.length < 6) {
+            showFlashMessage('error', 'Validation Error', 'Password must be at least 6 characters long.');
+            isValid = false;
+          }
+
+          if (password !== confirmPassword) {
+            showFlashMessage('error', 'Validation Error', 'Passwords do not match.');
+            isValid = false;
+          }
+
+          if (!terms) {
+            showFlashMessage('error', 'Validation Error', 'You must agree to the terms and conditions.');
+            isValid = false;
+          }
+
+          if (!isValid) {
+            event.preventDefault();
+            event.stopPropagation();
+          } else {
+            submitBtn.innerHTML = '<i class="spinner-border spinner-border-sm me-2"></i>Creating Account...';
+            submitBtn.disabled = true;
+          }
+
+          form.classList.add('was-validated');
+        } catch (error) {
+          console.error('Form validation error:', error);
+          event.preventDefault();
+          showFlashMessage('error', 'Form Error', 'An error occurred during form validation.');
+        }
+      });
+    }
+
+    // Real-time username validation
+    const usernameInput = document.getElementById('username');
+    usernameInput.addEventListener('input', function() {
+      const username = this.value;
+      
+      // Check for valid characters
+      if (!/^[a-zA-Z0-9_]+$/.test(username) && username.length > 0) {
+        this.setCustomValidity('Username can only contain letters, numbers, and underscores');
+      } else {
+        this.setCustomValidity('');
+      }
+    });
+
+    // Safe auto-dismiss for server-side alerts
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(alert => {
+      setTimeout(() => {
+        try {
+          if (typeof bootstrap !== 'undefined') {
+            const alertInstance = new bootstrap.Alert(alert);
+            alertInstance.close();
+          }
+        } catch (error) {
+          console.error('Alert dismiss error:', error);
+        }
+      }, 5000);
+    });
+
+  } catch (error) {
+    console.error('SignUp page initialization error:', error);
+  }
+});
+</script>

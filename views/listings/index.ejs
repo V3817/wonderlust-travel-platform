@@ -1,0 +1,595 @@
+<% layout("/layouts/boilerplate") %>
+
+<!-- Flash Messages Container -->
+<div id="flashContainer">
+  <!-- Server-side Flash Messages -->
+  <% if (success && success.length > 0) { %>
+    <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 mx-3 mt-3" role="alert">
+      <div class="d-flex align-items-center">
+        <i class="bi bi-check-circle-fill me-2 fs-5"></i>
+        <strong>Success!</strong> <%= success %>
+      </div>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  <% } %>
+
+  <% if (error && error.length > 0) { %>
+    <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0 mx-3 mt-3" role="alert">
+      <div class="d-flex align-items-center">
+        <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+        <strong>Error!</strong> <%= error %>
+      </div>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  <% } %>
+</div>
+
+<!-- Link to external CSS -->
+<link rel="stylesheet" href="/css/style.css">
+
+<!-- Hero Section -->
+<div class="bg-primary text-white py-5 mb-4">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-lg-8">
+        <h1 class="display-4 fw-bold mb-3">Discover Amazing Stays</h1>
+        <p class="lead mb-4">Find your perfect accommodation from our curated collection of unique properties</p>
+      </div>
+      <div class="col-lg-4 text-center">
+        <a href="/listings/new" class="btn btn-light btn-lg px-4">
+          <i class="bi bi-plus-circle"></i> Add New Listing
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container-fluid px-4">
+  <!-- Search and Filter Section -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <div class="row g-3 align-items-end">
+            <div class="col-md-4">
+              <label class="form-label">Search by location</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
+                <input type="text" class="form-control" placeholder="Enter city or country" id="searchInput">
+              </div>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Price range</label>
+              <select class="form-select" id="priceFilter">
+                <option value="">All prices</option>
+                <option value="0-2000">₹0 - ₹2,000</option>
+                <option value="2000-5000">₹2,000 - ₹5,000</option>
+                <option value="5000-10000">₹5,000 - ₹10,000</option>
+                <option value="10000+">₹10,000+</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Sort by</label>
+              <select class="form-select" id="sortFilter">
+                <option value="newest">Newest first</option>
+                <option value="price-low">Price: Low to High</option>
+                <option value="price-high">Price: High to Low</option>
+                <option value="rating">Highest rated</option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <button class="btn btn-primary w-100" onclick="applyFilters()">
+                <i class="bi bi-funnel"></i> Filter
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Section -->
+  <div class="row mb-4">
+    <div class="col-md-3 col-6 mb-3">
+      <div class="card border-0 bg-light text-center h-100">
+        <div class="card-body">
+          <i class="bi bi-house display-4 text-primary mb-2"></i>
+          <h4 class="fw-bold"><%= allListings.length %></h4>
+          <p class="text-muted mb-0">Total Listings</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 col-6 mb-3">
+      <div class="card border-0 bg-light text-center h-100">
+        <div class="card-body">
+          <i class="bi bi-geo-alt display-4 text-success mb-2"></i>
+          <h4 class="fw-bold"><%= new Set(allListings.map(l => l.country)).size %></h4>
+          <p class="text-muted mb-0">Countries</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 col-6 mb-3">
+      <div class="card border-0 bg-light text-center h-100">
+        <div class="card-body">
+          <i class="bi bi-star-fill display-4 text-warning mb-2"></i>
+          <h4 class="fw-bold">4.8</h4>
+          <p class="text-muted mb-0">Avg Rating</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 col-6 mb-3">
+      <div class="card border-0 bg-light text-center h-100">
+        <div class="card-body">
+          <i class="bi bi-people display-4 text-info mb-2"></i>
+          <h4 class="fw-bold">1K+</h4>
+          <p class="text-muted mb-0">Happy Guests</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Listings Grid -->
+  <div class="row" id="listingsGrid">
+    <% if (allListings && allListings.length > 0) { %>
+      <% allListings.forEach(listing => { %>
+        <div class="col-xl-3 col-lg-4 col-md-6 mb-4 listing-card" 
+             data-location="<%= listing.location.toLowerCase() %> <%= listing.country.toLowerCase() %>"
+             data-price="<%= listing.price %>"
+             data-rating="<%= listing.reviews && listing.reviews.length > 0 ? (listing.reviews.reduce((sum, r) => sum + r.rating, 0) / listing.reviews.length) : 0 %>">
+          <div class="card h-100 border-0 shadow-sm listing-hover">
+            <!-- Image with overlay -->
+            <div class="position-relative overflow-hidden">
+              <img src="<%= listing.image %>" 
+                   class="card-img-top" 
+                   style="height: 250px; object-fit: cover; transition: transform 0.3s;" 
+                   alt="<%= listing.title %>">
+              <div class="position-absolute top-0 end-0 m-3">
+                <span class="badge bg-dark bg-opacity-75">
+                  ₹<%= listing.price.toLocaleString("en-IN") %>/night
+                </span>
+              </div>
+              <div class="position-absolute top-0 start-0 m-3">
+                <button class="btn btn-light btn-sm rounded-circle" onclick="toggleWishlist(this)">
+                  <i class="bi bi-heart"></i>
+                </button>
+              </div>
+              <% if (listing.reviews && listing.reviews.length > 0) { %>
+                <div class="position-absolute bottom-0 start-0 m-3">
+                  <span class="badge bg-warning text-dark">
+                    <i class="bi bi-star-fill"></i>
+                    <%= (listing.reviews.reduce((sum, r) => sum + r.rating, 0) / listing.reviews.length).toFixed(1) %>
+                  </span>
+                </div>
+              <% } %>
+            </div>
+
+            <div class="card-body d-flex flex-column">
+              <div class="mb-2">
+                <h5 class="card-title fw-bold mb-1 text-truncate"><%= listing.title %></h5>
+                <p class="text-muted small mb-2">
+                  <i class="bi bi-geo-alt"></i> <%= listing.location %>, <%= listing.country %>
+                </p>
+              </div>
+              
+              <p class="card-text text-muted small flex-grow-1">
+                <%= listing.description.length > 100 ? listing.description.substring(0, 100) + '...' : listing.description %>
+              </p>
+              
+              <div class="mt-auto">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <div class="text-muted small">
+                    <% if (listing.owner) { %>
+                      <i class="bi bi-person-circle"></i> <%= listing.owner.username %>
+                    <% } %>
+                  </div>
+                  <div>
+                    <% if (listing.reviews && listing.reviews.length > 0) { %>
+                      <small class="text-muted">
+                        <%= listing.reviews.length %> review<%= listing.reviews.length > 1 ? 's' : '' %>
+                      </small>
+                    <% } else { %>
+                      <small class="text-muted">New listing</small>
+                    <% } %>
+                  </div>
+                </div>
+                
+                <div class="d-grid gap-2 d-md-flex">
+                  <a href="/listings/<%= listing._id %>" class="btn btn-primary btn-sm flex-fill">
+                    <i class="bi bi-eye"></i> View Details
+                  </a>
+                  <% if (currentUser && listing.owner && (listing.owner._id ? listing.owner._id.equals(currentUser._id) : listing.owner.equals(currentUser._id))) { %>
+                    <a href="/listings/<%= listing._id %>/edit" class="btn btn-outline-success btn-sm">
+                      <i class="bi bi-pencil"></i>
+                    </a>
+                    <form action="/listings/<%= listing._id %>?_method=DELETE" method="POST" class="d-inline">
+                      <button class="btn btn-outline-danger btn-sm" 
+                              onclick="return confirm('Are you sure?')"
+                              type="submit">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </form>
+                  <% } %>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% }) %>
+    <% } else { %>
+      <div class="col-12">
+        <div class="text-center py-5">
+          <i class="bi bi-house display-1 text-muted mb-4"></i>
+          <h3 class="text-muted">No listings found</h3>
+          <p class="text-muted mb-4">Be the first to add a listing!</p>
+          <a href="/listings/new" class="btn btn-primary btn-lg">
+            <i class="bi bi-plus-circle"></i> Add First Listing
+          </a>
+        </div>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<!-- Link to external JavaScript -->
+<script src="/js/main.js"></script>
+
+<script>
+// Client-side flash message system
+function showFlashMessage(type, title, message, duration = 5000) {
+  const flashContainer = document.getElementById('flashContainer');
+  const alertId = 'alert-' + Date.now();
+  
+  const iconClass = type === 'success' ? 'bi-check-circle-fill' : 
+                   type === 'error' ? 'bi-exclamation-triangle-fill' : 
+                   type === 'warning' ? 'bi-exclamation-circle-fill' : 
+                   'bi-info-circle-fill';
+  
+  const alertHTML = `
+    <div class="alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show shadow-sm border-0 mx-3 mt-3" role="alert" id="${alertId}">
+      <div class="d-flex align-items-center">
+        <i class="${iconClass} me-2 fs-5"></i>
+        <strong>${title}!</strong> ${message}
+      </div>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  `;
+  
+  flashContainer.insertAdjacentHTML('beforeend', alertHTML);
+  
+  // Auto-dismiss after specified duration
+  setTimeout(() => {
+    const alert = document.getElementById(alertId);
+    if (alert) {
+      const bsAlert = new bootstrap.Alert(alert);
+      bsAlert.close();
+    }
+  }, duration);
+}
+
+// Enhanced wishlist toggle with error handling
+function toggleWishlist(button) {
+  try {
+    const icon = button.querySelector('i');
+    const listingTitle = button.closest('.card').querySelector('.card-title').textContent;
+    
+    if (icon.classList.contains('bi-heart')) {
+      icon.classList.remove('bi-heart');
+      icon.classList.add('bi-heart-fill');
+      button.classList.add('text-danger');
+      showFlashMessage('success', 'Added to Wishlist', `"${listingTitle}" has been added to your wishlist.`);
+    } else {
+      icon.classList.remove('bi-heart-fill');
+      icon.classList.add('bi-heart');
+      button.classList.remove('text-danger');
+      showFlashMessage('info', 'Removed from Wishlist', `"${listingTitle}" has been removed from your wishlist.`);
+    }
+  } catch (error) {
+    showFlashMessage('error', 'Error', 'Unable to update wishlist. Please try again.');
+    console.error('Wishlist error:', error);
+  }
+}
+
+// Enhanced filter function with better error handling
+function applyFilters() {
+  try {
+    const searchTerm = document.getElementById('searchInput')?.value?.toLowerCase() || '';
+    const priceRange = document.getElementById('priceFilter')?.value || '';
+    const sortBy = document.getElementById('sortFilter')?.value || '';
+    const listings = document.querySelectorAll('.listing-card');
+    
+    if (listings.length === 0) {
+      showFlashMessage('info', 'No Listings', 'No listings available to filter.');
+      return;
+    }
+    
+    let visibleListings = Array.from(listings);
+    
+    // Filter by search term
+    if (searchTerm) {
+      visibleListings = visibleListings.filter(listing => {
+        const location = listing.dataset.location || '';
+        return location.includes(searchTerm);
+      });
+    }
+    
+    // Filter by price range
+    if (priceRange) {
+      visibleListings = visibleListings.filter(listing => {
+        const price = parseInt(listing.dataset.price) || 0;
+        if (priceRange === '0-2000') return price <= 2000;
+        if (priceRange === '2000-5000') return price > 2000 && price <= 5000;
+        if (priceRange === '5000-10000') return price > 5000 && price <= 10000;
+        if (priceRange === '10000+') return price > 10000;
+        return true;
+      });
+    }
+    
+    // Hide all listings first
+    listings.forEach(listing => {
+      listing.style.display = 'none';
+    });
+    
+    // Show filtered listings
+    visibleListings.forEach(listing => {
+      listing.style.display = 'block';
+    });
+    
+    // Show result message only if user actively searched
+    if (searchTerm && visibleListings.length === 0) {
+      showFlashMessage('warning', 'No Results', 'No listings match your search criteria.');
+    }
+    
+    // Sort listings
+    if (sortBy && visibleListings.length > 0) {
+      const container = document.getElementById('listingsGrid');
+      if (container) {
+        visibleListings.sort((a, b) => {
+          if (sortBy === 'price-low') {
+            return (parseInt(a.dataset.price) || 0) - (parseInt(b.dataset.price) || 0);
+          }
+          if (sortBy === 'price-high') {
+            return (parseInt(b.dataset.price) || 0) - (parseInt(a.dataset.price) || 0);
+          }
+          if (sortBy === 'rating') {
+            return (parseFloat(b.dataset.rating) || 0) - (parseFloat(a.dataset.rating) || 0);
+          }
+          return 0;
+        });
+        
+        visibleListings.forEach(listing => {
+          container.appendChild(listing);
+        });
+      }
+    }
+  } catch (error) {
+    console.error('Filter error:', error);
+    // Don't show flash message for filter errors, just log them
+  }
+}
+
+// Network error handling
+function handleNetworkError() {
+  if (!navigator.onLine) {
+    showFlashMessage('error', 'Network Error', 'You are currently offline. Please check your internet connection.');
+  }
+}
+
+// Image loading error handling
+function handleImageError(img) {
+  const fallbackSrc = 'https://via.placeholder.com/250x250/e9ecef/6c757d?text=Image+Not+Available';
+  if (img.src !== fallbackSrc) {
+    img.src = fallbackSrc;
+    img.alt = 'Image not available';
+    showFlashMessage('warning', 'Image Error', 'Some images failed to load and have been replaced with placeholders.');
+  }
+}
+
+// Form validation errors
+function handleFormErrors() {
+  const forms = document.querySelectorAll('form');
+  forms.forEach(form => {
+    form.addEventListener('submit', function(e) {
+      const requiredFields = form.querySelectorAll('[required]');
+      let hasErrors = false;
+      
+      requiredFields.forEach(field => {
+        if (!field.value.trim()) {
+          hasErrors = true;
+          field.classList.add('is-invalid');
+        } else {
+          field.classList.remove('is-invalid');
+        }
+      });
+      
+      if (hasErrors) {
+        e.preventDefault();
+        showFlashMessage('error', 'Validation Error', 'Please fill in all required fields.');
+      }
+    });
+  });
+}
+
+// Safe event listener setup
+document.addEventListener('DOMContentLoaded', function() {
+  try {
+    // Real-time search with safe event handling
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+      searchInput.addEventListener('input', function() {
+        // Debounce the search to avoid too many calls
+        clearTimeout(this.searchTimeout);
+        this.searchTimeout = setTimeout(() => {
+          try {
+            applyFilters();
+          } catch (error) {
+            console.error('Search error:', error);
+          }
+        }, 300);
+      });
+    }
+
+    // URL search parameter support with better error handling
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const searchParam = urlParams.get('search');
+      if (searchParam && searchInput) {
+        searchInput.value = searchParam;
+        applyFilters();
+      }
+    } catch (error) {
+      console.error('URL parameter error:', error);
+    }
+
+    // Auto-dismiss server-side alerts
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(alert => {
+      setTimeout(() => {
+        try {
+          const alertInstance = new bootstrap.Alert(alert);
+          alertInstance.close();
+        } catch (error) {
+          console.error('Alert dismiss error:', error);
+        }
+      }, 5000);
+    });
+
+    // Enhanced delete button handling
+    const deleteForms = document.querySelectorAll('form[action*="DELETE"]');
+    deleteForms.forEach(form => {
+      const button = form.querySelector('button[type="submit"]');
+      if (button) {
+        button.addEventListener('click', function(e) {
+          e.preventDefault();
+          
+          const card = form.closest('.card');
+          const titleElement = card?.querySelector('.card-title');
+          const listingTitle = titleElement?.textContent?.trim() || 'this listing';
+          
+          const confirmed = confirm(`Are you sure you want to delete "${listingTitle}"? This action cannot be undone.`);
+          if (confirmed) {
+            showFlashMessage('info', 'Deleting', 'Please wait while we delete the listing...');
+            setTimeout(() => {
+              form.submit();
+            }, 1000);
+          }
+        });
+      }
+    });
+
+    // Network status monitoring
+    window.addEventListener('online', () => {
+      showFlashMessage('success', 'Connection Restored', 'Your internet connection has been restored.');
+    });
+    
+    window.addEventListener('offline', () => {
+      showFlashMessage('error', 'Connection Lost', 'You have lost your internet connection.');
+    });
+
+  } catch (error) {
+    console.error('Initialization error:', error);
+  }
+});
+
+// Make functions globally available
+window.toggleWishlist = toggleWishlist;
+window.applyFilters = applyFilters;
+</script>
+
+<style>
+/* Flash message styling */
+.alert {
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  border-left: 4px solid;
+  animation: slideInDown 0.5s ease-out;
+}
+
+.alert-success {
+  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+  border-left-color: #28a745;
+  color: #155724;
+}
+
+.alert-danger {
+  background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+  border-left-color: #dc3545;
+  color: #721c24;
+}
+
+.alert-dismissible .btn-close {
+  position: absolute;
+  top: 50%;
+  right: 1rem;
+  transform: translateY(-50%);
+  padding: 0.5rem;
+  background-color: rgba(0,0,0,0.1);
+  border-radius: 50%;
+  opacity: 0.7;
+  transition: all 0.2s ease;
+}
+
+.alert-dismissible .btn-close:hover {
+  opacity: 1;
+  background-color: rgba(0,0,0,0.2);
+  transform: translateY(-50%) scale(1.1);
+}
+
+@keyframes slideInDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Auto-hide flash messages after 5 seconds */
+.alert {
+  position: relative;
+  overflow: hidden;
+}
+
+.alert::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent 0%, currentColor 50%, transparent 100%);
+  animation: progressBar 5s linear forwards;
+}
+
+@keyframes progressBar {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+.listing-hover {
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.listing-hover:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+}
+
+.listing-hover:hover img {
+  transform: scale(1.05);
+}
+
+.card-img-top {
+  border-radius: 0.375rem 0.375rem 0 0;
+}
+
+@media (max-width: 768px) {
+  .display-4 {
+    font-size: 2rem;
+  }
+}
+</style>
